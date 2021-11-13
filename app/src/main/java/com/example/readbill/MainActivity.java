@@ -1,5 +1,6 @@
 package com.example.readbill;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.PermissionChecker;
@@ -14,23 +15,33 @@ import android.util.SparseArray;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.vision.Frame;
-import com.google.android.gms.vision.text.TextBlock;
-import com.google.android.gms.vision.text.TextRecognizer;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.ml.vision.FirebaseVision;
+import com.google.firebase.ml.vision.common.FirebaseVisionImage;
+import com.google.firebase.ml.vision.text.FirebaseVisionText;
+import com.google.firebase.ml.vision.text.FirebaseVisionTextRecognizer;
+
+import java.io.IOException;
 
 
 public class MainActivity extends AppCompatActivity {
     ImageView iv;
-    Button btnGallery,btnCamera,btnNewApp;
+    Button btnGallery, btnCamera, btnNewApp;
+    TextView tv1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        iv=findViewById(R.id.imageView);
-        btnCamera=findViewById(R.id.btnCamera);
-        btnGallery=findViewById(R.id.btnGal);
+        iv = findViewById(R.id.imageView);
+        btnCamera = findViewById(R.id.btnCamera);
+        btnGallery = findViewById(R.id.btnGal);
+        tv1 = findViewById(R.id.text);
 
 
         btnGallery.setOnClickListener(new View.OnClickListener() {
@@ -43,12 +54,10 @@ public class MainActivity extends AppCompatActivity {
                         PermissionChecker.PERMISSION_GRANTED) {
                     ActivityCompat.requestPermissions(MainActivity.this, new
                             String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 112);
-                }
-                else
-                {
-                    Intent in=new Intent(Intent.ACTION_PICK,
+                } else {
+                    Intent in = new Intent(Intent.ACTION_PICK,
                             MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                    startActivityForResult(in,112);
+                    startActivityForResult(in, 112);
                 }
             }
         });
@@ -76,32 +85,61 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(
             int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode==112 && data!=null)
-        {
-            Uri uri= data.getData();
+        if (requestCode == 112 && data != null) {
+            Uri uri = data.getData();
+            try {
+                Bitmap bmp = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri);
+                FirebaseVisionImage image = FirebaseVisionImage.fromBitmap(bmp);
+                FirebaseVisionTextRecognizer textRecognizer = FirebaseVision.getInstance()
+                        .getOnDeviceTextRecognizer();
+
+                Task<FirebaseVisionText> result =
+                        textRecognizer.processImage(image)
+                                .addOnSuccessListener(new OnSuccessListener<FirebaseVisionText>() {
+                                    @Override
+                                    public void onSuccess(FirebaseVisionText firebaseVisionText) {
+
+                                        tv1.setText(firebaseVisionText.getText());
+                                        Toast.makeText(MainActivity.this, ""+firebaseVisionText.getText(), Toast.LENGTH_SHORT).show();
+                                    }
+                                })
+                                .addOnFailureListener(
+                                        new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+                                                //process failure
+                                            }
+                                        });
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             iv.setImageURI(uri);
         }
-        if(requestCode==113 && data !=null)
-        {
-            Bitmap bmp=(Bitmap)data.getExtras().get("data");
+        if (requestCode == 113 && data != null) {
+            Bitmap bmp = (Bitmap) data.getExtras().get("data");
             iv.setImageBitmap(bmp);
-            TextRecognizer textRecognizer = new TextRecognizer.Builder(getApplicationContext()).build();
+            FirebaseVisionImage image = FirebaseVisionImage.fromBitmap(bmp);
+            FirebaseVisionTextRecognizer textRecognizer = FirebaseVision.getInstance()
+                    .getOnDeviceTextRecognizer();
 
-            Frame imageFrame = new Frame.Builder()
+            Task<FirebaseVisionText> result =
+                    textRecognizer.processImage(image)
+                            .addOnSuccessListener(new OnSuccessListener<FirebaseVisionText>() {
+                                @Override
+                                public void onSuccess(FirebaseVisionText firebaseVisionText) {
 
-                    .setBitmap(bmp)                 // your image bitmap
-                    .build();
-
-            String imageText = "";
-
-
-            SparseArray<TextBlock> textBlocks = textRecognizer.detect(imageFrame);
-
-            for (int i = 0; i < textBlocks.size(); i++) {
-                TextBlock textBlock = textBlocks.get(textBlocks.keyAt(i));
-                imageText = textBlock.getValue();                   // return string
-            }
-            Toast.makeText(this, ""+imageText, Toast.LENGTH_SHORT).show();
+                                    tv1.setText(firebaseVisionText.getText());
+                                    Toast.makeText(MainActivity.this, ""+firebaseVisionText.getText(), Toast.LENGTH_SHORT).show();
+                                }
+                            })
+                            .addOnFailureListener(
+                                    new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            //process failure
+                                        }
+                                    });
         }
     }
 }

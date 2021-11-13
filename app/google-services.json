@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "249849486093",
+    "project_id": "readbill-e0e96",
+    "storage_bucket": "readbill-e0e96.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:249849486093:android:dcd8a624d28d4116952e44",
+        "android_client_info": {
+          "package_name": "com.example.readbill"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "249849486093-oq4264sg6fq04fjhdhu93vkp1ues8ebl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.readbill",
+            "certificate_hash": "39b4779f420487f2a077b90cd15100d46a81e3e5"
+          }
+        },
+        {
+          "client_id": "249849486093-h35ieaa9sflk8vuktvk239rp0iso53qs.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCVAM7NLMC-j_uugOaZyw0zWT5zvdcGBbQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "249849486093-h35ieaa9sflk8vuktvk239rp0iso53qs.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
